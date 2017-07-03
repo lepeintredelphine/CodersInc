@@ -9,6 +9,8 @@
  
 SoftwareSerial mySerial(3,2); //Attach LCD serial display RX pin to digital pin 2
 
+SoftwareSerial emicSerial = SoftwareSerial(rxPin, txPin);
+
 int PressurePin = A0;
 int force;
 
