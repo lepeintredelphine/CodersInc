@@ -1,10 +1,16 @@
-
 #include <SoftwareSerial.h> //needed for LCD screen
 
+#define touchPin 0 //on touch pad 
 #define trigPin 3 //on ultrasonic sensor
 #define echoPin 4 //on ultrasonic sensor
+#define rxPin   10  // Serial input (connects to Emic 2's SOUT pin)
+#define txPin   11  // Serial output (connects to Emic 2's SIN pin)
+#define ledPin  13  // Most Arduino boards have an on-board LED on this pin
  
 SoftwareSerial mySerial(3,2); //Attach LCD serial display RX pin to digital pin 2
+
+int PressurePin = A0;
+int force;
 
 //Code runs once
 void setup() {
@@ -17,6 +23,19 @@ void setup() {
   //for LCD screen
   mySerial.begin(9600); //set up serial port for 9600 baud on LCD screen
   delay(500); //wait for LCD to boot up
+  
+  // for text-to-speech module
+  pinMode(ledPin, OUTPUT);
+  pinMode(rxPin, INPUT);
+  pinMode(txPin, OUTPUT);  
+  emicSerial.begin(9600);
+  
+  digitalWrite(ledPin, LOW); 
+  emicSerial.print('\n');             
+  while (emicSerial.read() != ':');  
+  delay(10);                      
+  emicSerial.flush();                
+  
 }
 
 //Code loops
@@ -66,6 +85,13 @@ void loop() {
     delay(1000);
   }
   
+  force = analogRead(PressurePin);
+  if (force > 500) {
+    emicSerial.print('S');
+    emicSerial.print("Your force is greater than 500");
+    emicSerial.print('\n');
+  }
+  delay(100);
 
 }
 
