@@ -1,0 +1,12 @@
+let index2 = 0
+let neopixel = light.createNeoPixelStrip()
+loops.forever(() => {
+    for (let index = 0; index <= 40; index++) {
+        neopixel.setPixelColor(index, Colors.Red)
+    }
+})
+neopixel = light.createNeoPixelStrip(
+pins.A2,
+41,
+NeoPixelMode.RGB
+)
