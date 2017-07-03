@@ -1,0 +1,83 @@
+
+#include <SoftwareSerial.h> //needed for LCD screen
+
+#define trigPin 3 //on ultrasonic sensor
+#define echoPin 4 //on ultrasonic sensor
+ 
+SoftwareSerial mySerial(3,2); //Attach LCD serial display RX pin to digital pin 2
+
+//Code runs once
+void setup() {
+  Serial.begin(9600); //allows for printing things 
+
+  //for ultrasonic sensor
+  pinMode(trigPin, OUTPUT); //for ultrasonic sensor
+  pinMode(echoPin, INPUT);
+
+  //for LCD screen
+  mySerial.begin(9600); //set up serial port for 9600 baud on LCD screen
+  delay(500); //wait for LCD to boot up
+}
+
+//Code loops
+void loop() {
+  
+  //Ultrasonic sensor set up
+  long duration; 
+  long distance;
+  digitalWrite(trigPin, LOW);
+  delayMicroseconds(2);
+  digitalWrite(trigPin, HIGH);
+  delayMicroseconds(10);
+  duration = pulseIn(echoPin, HIGH);
+  distance = (duration/2)/29.1;
+  Serial.println(distance); //prints out distance to surface on serial monitor
+
+
+  //if person gets too close, then display message
+  if(distance > 750){
+    newLine();
+    mySerial.write("750");
+    delay(1000);
+  }
+  else if(distance > 500){
+    newLine();
+    mySerial.write("500");
+    delay(1000);
+  }
+  else if(distance > 250){
+    newLine();
+    mySerial.write("250");
+    delay(1000);
+  }
+  else if(distance > 75){
+    newLine();
+    mySerial.write("75");
+    delay(1000);
+  }
+  else if(distance > 40){
+    newLine();
+    mySerial.write(40);
+    delay(1000);
+  }
+  else{
+    newLine();
+    mySerial.write("Very close!");
+    delay(1000);
+  }
+  
+
+}
+
+//Methods!
+
+//clears LCD screen and sets cursor at start
+void newLine(){
+  mySerial.write(254);
+  mySerial.write(128);
+  mySerial.write("                               ");
+  mySerial.write(254);
+  mySerial.write(128);
+}
+
+
