@@ -14,8 +14,7 @@ SoftwareSerial emicSerial = SoftwareSerial(rxPin, txPin);
 int PressurePin = A0;
 int force;
 
-//Code runs once
-void setup() {
+//Code runs oncevoid setup() {
   Serial.begin(9600); //allows for printing things 
 
   //for ultrasonic sensor
@@ -25,7 +24,7 @@ void setup() {
   //for LCD screen
   mySerial.begin(9600); //set up serial port for 9600 baud on LCD screen
   delay(500); //wait for LCD to boot up
-  
+ 
   // for text-to-speech module
   pinMode(rxPin, INPUT);
   pinMode(txPin, OUTPUT);  
@@ -80,12 +79,63 @@ void loop() {
     delay(1000);
   }
   
+  // Voice/Singing
   force = analogRead(PressurePin);
+
+  emicSerial.print("N8\n");
+  emicSerial.print("V4\n");
+
   if (force > 500) {
+
     emicSerial.print('S');
-    emicSerial.print("Microsoft was founded by Paul Allen and Bill Gates on April 4, 1975, to develop and sell BASIC interpreters for the Altair 8800. It rose to dominate the personal computer operating system market with MS-DOS in the mid-1980s, followed by Microsoft Windows. The company's 1986 initial public offering (IPO), and subsequent rise in its share price, created three billionaires and an estimated 12,000 millionaires among Microsoft employees. Since the 1990s, it has increasingly diversified from the operating system market and has made a number of corporate acquisitions. In May 2011, Microsoft acquired Skype Technologies for $8.5 billion,[9] and in December 2016 bought LinkedIn for $26.2 billio");
+
+    emicSerial.print("Dance battle. ");
+
+    emicSerial.print("Now, this is a story all about how, ");
+    emicSerial.print("My life got flipped turned upside down, ");
+    emicSerial.print("And i'd like to take a minute, ");
+    emicSerial.print("Just sit right there, ");
+    emicSerial.print("I'll tell you how i became the prince of a town called Bel Air, ");
+
+    emicSerial.print('\n');
+
+  } else if (force > 400) {
+
+    emicSerial.print('S');
+
+    emicSerial.print("Dance battle. ");
+
+    emicSerial.print("Can't touch this oh oh oh oh oh oh oh, Can't touch this oh oh oh oh oh oh oh, Can't touch this oh oh oh oh oh, ");
+    emicSerial.print("Oh oh oh oh oh oh oh break it down, ");
+    emicSerial.print("oh oh oh oh oh oh oh, oh oh oh oh oh oh oh, oh oh oh oh oh oh oh,  ");
+    emicSerial.print("Stop Hammer time ");
+    emicSerial.print('\n');
+
+  } else if (force > 300) {
+    
+    emicSerial.print('S');
+
+    emicSerial.print("Are you even trying?");
+
+    emicSerial.print('\n');
+
+  } else if (force > 200) {
+    
+    emicSerial.print('S');
+
+    emicSerial.print("Press harder");
+
+    emicSerial.print('\n');
+    
+  } else if (force > 100) {
+    
+    emicSerial.print('S');
+
+    emicSerial.print("Come on. You are stronger than that");
+
     emicSerial.print('\n');
   }
+
   delay(100);
 
 }
