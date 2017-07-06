@@ -1,0 +1,23 @@
+#include <Adafruit_CircuitPlayground.h>
+#include <Servo.h>
+
+Servo left;
+Servo right;
+
+
+void setup() {
+  left.attach(12);
+  right.attach(6);
+  CircuitPlayground.begin();
+  Serial.begin(9600);
+  Serial.println("Servo test!");
+}
+
+void loop() {
+  Serial.println(digitalRead(A4));
+  if(digitalRead(A4)){
+    int randomness = random(0, 180);
+    left.write(randomness);
+    right.write(180 - randomness);
+  }
+}
