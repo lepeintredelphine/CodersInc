@@ -1,17 +1,23 @@
+let index = 0
 let neopixel = light.createNeoPixelStrip()
+let start = 0
+let end = 0
+let index5 = 0
 loops.forever(() => {
-    for (let index2 = 0; index2 <= 30; index2++) {
-        neopixel.setPixelColor(index2, Colors.White)
-    }
-    for (let index3 = 0; index3 <= 19; index3++) {
-        neopixel.setPixelColor(index3, Colors.Orange)
-    }
-    for (let index4 = 0; index4 <= 5; index4++) {
+    for (let index4 = start; index4 <= end; index4++) {
         neopixel.setPixelColor(index4, Colors.Red)
     }
+start += 1
+    end += 1
 })
+index5 = 0
+end = start + 5
+index = 0
 neopixel = light.createNeoPixelStrip(
 pins.A0,
-30,
+60,
 NeoPixelMode.RGB
 )
+for (let index3 = 0; index3 <= 60; index3++) {
+    neopixel.setPixelColor(index3, Colors.White)
+}
