@@ -1,23 +1,29 @@
-let index = 0
 let neopixel = light.createNeoPixelStrip()
-let start = 0
-let end = 0
-let index5 = 0
+let index = 0
 loops.forever(() => {
-    for (let index4 = start; index4 <= end; index4++) {
-        neopixel.setPixelColor(index4, Colors.Red)
+    if (input.soundLevel() <= 18) {
+        for (let index2 = 0; index2 <= 200; index2++) {
+            neopixel.setPixelColor(index2, Colors.Red)
+        }
     }
-start += 1
-    end += 1
+    while (input.soundLevel() > 18) {
+        for (let index3 = 0; index3 <= 200; index3++) {
+            neopixel.setPixelColor(index3, Colors.Violet)
+        }
+        loops.pause(500)
+        for (let index4 = 0; index4 <= 200; index4++) {
+            neopixel.setPixelColor(index4, Colors.Blue)
+        }
+        loops.pause(500)
+        for (let index5 = 0; index5 <= 200; index5++) {
+            neopixel.setPixelColor(index5, Colors.White)
+        }
+        loops.pause(500)
+    }
 })
-index5 = 0
-end = start + 5
 index = 0
 neopixel = light.createNeoPixelStrip(
-pins.A0,
-60,
+pins.A2,
+200,
 NeoPixelMode.RGB
 )
-for (let index3 = 0; index3 <= 60; index3++) {
-    neopixel.setPixelColor(index3, Colors.White)
-}
