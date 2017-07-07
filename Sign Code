@@ -1,155 +1,276 @@
 #include <SoftwareSerial.h> //needed for LCD screen
 
+
+
+
 #define touchPin 0 //on touch pad 
+
 #define trigPin 3 //on ultrasonic sensor
+
 #define echoPin 4 //on ultrasonic sensor
+
 #define rxPin   10  // Serial input (connects to Emic 2's SOUT pin)
+
 #define txPin   11  // Serial output (connects to Emic 2's SIN pin)
 
+
+
  
+
 SoftwareSerial mySerial(3,2); //Attach LCD serial display RX pin to digital pin 2
+
+
 
 SoftwareSerial emicSerial = SoftwareSerial(rxPin, txPin);
 
+
+
 int PressurePin = A0;
+
 int force;
 
-//Code runs oncevoid setup() {
-  Serial.begin(9600); //allows for printing things 
+
+
+//Code runs once
+void setup() {
+
+Serial.begin(9600); //allows for printing things 
+
+  
 
   //for ultrasonic sensor
+
   pinMode(trigPin, OUTPUT); //for ultrasonic sensor
+
   pinMode(echoPin, INPUT);
 
+
+
   //for LCD screen
+
   mySerial.begin(9600); //set up serial port for 9600 baud on LCD screen
+
   delay(500); //wait for LCD to boot up
+
  
+
   // for text-to-speech module
+
   pinMode(rxPin, INPUT);
+
   pinMode(txPin, OUTPUT);  
+
   emicSerial.begin(9600);            
+
   
+
 }
 
+
+
 //Code loops
+
 void loop() {
+
   
+
   //Ultrasonic sensor set up
+
   long duration; 
+
   long distance;
+
   digitalWrite(trigPin, LOW);
+
   delayMicroseconds(2);
+
   digitalWrite(trigPin, HIGH);
+
   delayMicroseconds(10);
+
   duration = pulseIn(echoPin, HIGH);
+
   distance = (duration/2)/29.1;
+  Serial.print("Distance is ");
+
   Serial.println(distance); //prints out distance to surface on serial monitor
 
 
+
+
+
   //if person gets too close, then display message
+
   if(distance > 750){
+
     newLine();
-    mySerial.write("Hello! My name is Boogie the robot. - Boogie");
+
+    mySerial.write("Hello! My name is   Boogie the robot.         - Boogie");
+
     delay(1000);
+
   }
+
   else if(distance > 500){
+
     newLine();
-    mySerial.write("Come closer and press the button! I see you there - Boogie the robot");
+
+    mySerial.write("Come closer and press and hold the fur! I see you there - Boogie the robot");
+
     delay(1000);
+
   }
+
   else if(distance > 250){
+
     newLine();
-    mySerial.write("I can almost smell you! Get over here and press the button - Boogie the robot");
+
+    mySerial.write("Talk to me and I'll move! - Boogie the robot");
+
     delay(1000);
+
   }
-  else if(distance > 75){
+
+  /*else if(distance > 75){
+
     newLine();
-    mySerial.write("I can seeee you. Come close and press the button - Boogie the robot");
+
+    mySerial.write("I can seee you. Comeclose. Press and    hold the fur!            - Boogie the robot");
+
     delay(1000);
-  }
+
+  }*/
+
   else if(distance > 40){
+
     newLine();
-    mySerial.write("Press the button! You're basically over here - Boogie the robot");
+
+    mySerial.write("Press the fur!      You're basically    over here.          - Boogie the robot");
+
     delay(1000);
+
   }
+
   else{
+
     newLine();
-    mySerial.write("Press the button to see me dance! - Boogie the robot");
+
+    mySerial.write("Press and hold the  fur patch to see me dance!               - Boogie the robot");
+
     delay(1000);
+
   }
+
+  delay(1000);
+
   
+
   // Voice/Singing
+
   force = analogRead(PressurePin);
 
+
+
   emicSerial.print("N8\n");
-  emicSerial.print("V4\n");
 
-  if (force > 500) {
+  emicSerial.print("V5\n");
+
+
+  if (force > 200) {
+    int num = random(0,3);
+    Serial.println(force);
+    Serial.println(num);
+
+    
+
+    if (num == 0) {
+      Serial.print("inside");
+      emicSerial.print('S');
+      emicSerial.print("Dance battle. ");
+      emicSerial.print("Now, this is a story all about how, ");
+      emicSerial.print("My life got flipped turned upside down, ");
+      emicSerial.print("And i'd like to take a minute, ");
+      emicSerial.print("Just sit right there, ");
+      emicSerial.print("I'll tell you how i became the prince of a town called Bel Air, ");
+      emicSerial.print('\n');
+    } else if (num == 1) {
+      Serial.print("inside");
+      emicSerial.print('S');
+      emicSerial.print("Dance battle. ");
+      emicSerial.print("Stop Hammer time");
+      emicSerial.print("Can't touch this oh oh, oh, oh, oh oh oh, Can't touch this oh oh, oh, oh, oh oh oh, Can't touch this oh oh, oh oh oh, ");
+      emicSerial.print("Oh oh, oh, oh, oh oh oh break it down, ");
+      emicSerial.print("oh oh oh oh oh oh oh, oh oh oh oh oh oh oh, oh oh oh oh oh oh oh,  ");
+      emicSerial.print("Stop Hammer time ");
+      emicSerial.print('\n');
+    } else {
+      Serial.print("inside");
+      emicSerial.print('S');
+      emicSerial.print("Dance battle. ");
+      emicSerial.print("Everything 24 Karats, Take a look in that mirror, ");
+      emicSerial.print("Take a look in that mirror, Now tell me who's the fairest, ");
+      emicSerial.print("Is it you? Is it me? ");
+      emicSerial.print("Say it's us and I'll agree, baby");
+      emicSerial.print('\n');
+    }
+  } else if (force > 75) {
+
+    
 
     emicSerial.print('S');
 
-    emicSerial.print("Dance battle. ");
 
-    emicSerial.print("Now, this is a story all about how, ");
-    emicSerial.print("My life got flipped turned upside down, ");
-    emicSerial.print("And i'd like to take a minute, ");
-    emicSerial.print("Just sit right there, ");
-    emicSerial.print("I'll tell you how i became the prince of a town called Bel Air, ");
+
+    emicSerial.print("Press harder to hear different songs");
+
+
 
     emicSerial.print('\n');
 
-  } else if (force > 400) {
+    
+
+  } else if (force > 50) {
+
+    
 
     emicSerial.print('S');
 
-    emicSerial.print("Dance battle. ");
 
-    emicSerial.print("Can't touch this oh oh oh oh oh oh oh, Can't touch this oh oh oh oh oh oh oh, Can't touch this oh oh oh oh oh, ");
-    emicSerial.print("Oh oh oh oh oh oh oh break it down, ");
-    emicSerial.print("oh oh oh oh oh oh oh, oh oh oh oh oh oh oh, oh oh oh oh oh oh oh,  ");
-    emicSerial.print("Stop Hammer time ");
-    emicSerial.print('\n');
-
-  } else if (force > 300) {
-    
-    emicSerial.print('S');
-
-    emicSerial.print("Are you even trying?");
-
-    emicSerial.print('\n');
-
-  } else if (force > 200) {
-    
-    emicSerial.print('S');
-
-    emicSerial.print("Press harder");
-
-    emicSerial.print('\n');
-    
-  } else if (force > 100) {
-    
-    emicSerial.print('S');
 
     emicSerial.print("Come on. You are stronger than that");
 
+
+
     emicSerial.print('\n');
+
   }
+
+
 
   delay(100);
 
+
+
 }
+
+
 
 //Methods!
 
+
+
 //clears LCD screen and sets cursor at start
+
 void newLine(){
+
   mySerial.write(254);
+
   mySerial.write(128);
-  mySerial.write("                                                                               ");
+
+  mySerial.write("                                                                                                                                                                                ");
+
   mySerial.write(254);
+
   mySerial.write(128);
+
 }
-
-
-
