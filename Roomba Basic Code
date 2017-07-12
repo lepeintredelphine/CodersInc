@@ -1,0 +1,137 @@
+int rxPin = 12;
+int txPin = 13;
+int ddPin = 11;
+
+#include <SoftwareSerial.h>
+SoftwareSerial mySerial(rxPin, txPin);
+
+/*light the LED*/
+#define RED 255
+#define GREEN 0
+#define ORANGE 128
+#define BLUE 255
+
+#define LED_ON 255
+#define LED_OFF 0
+
+void lightPower(unsigned char color, unsigned char intensity, unsigned char zero)
+{
+  mySerial.write(139); //initiates being able to set led color
+  mySerial.write(zero); //led bits
+  mySerial.write(color);
+  mySerial.write(intensity);
+}
+
+#define LEFT  1
+#define RIGHT 2
+
+//start wheels turning at specific speed
+void startWheels(int rsp, int lsp)
+{
+  mySerial.write(145); //startwheels by assigning velocity to each of the two wheels
+  mySerial.write(highByte(rsp));
+  mySerial.write(lowByte(rsp));
+  mySerial.write(highByte(lsp));
+  mySerial.write(lowByte(lsp));
+}
+
+//stop wheels from turning(set startwheels to 0,0)
+void stopWheels()
+{
+  startWheels(0,0);
+  delay(30);
+}
+
+//move forward
+void forward()
+{
+   mySerial.write(145);
+   mySerial.write(1);
+   mySerial.write(194);
+   mySerial.write(1);
+   mySerial.write(194);
+}
+
+//spin motors in opposite directions == prevent self destruct mode
+void spinInPlace()
+{
+  mySerial.write(145);
+  mySerial.write(255);
+  mySerial.write(56);
+  mySerial.write(1);
+  mySerial.write(200);
+}
+
+//reverse
+unsigned long reverse()
+{
+  mySerial.write(145);
+  mySerial.write(255);
+  mySerial.write(56);
+  mySerial.write(255);
+  mySerial.write(56);
+}
+
+void setup() 
+{
+  //initialize console serial port
+  Serial.begin(9600);
+
+  //set up serial for talking to CREATE
+  pinMode(txPin, OUTPUT);
+  pinMode(rxPin, INPUT);
+  mySerial.begin(19200);
+  
+  //Pin 13 can be used for controlling the onboard LED
+  pinMode(13, OUTPUT);
+
+    // Attempt to set the BAUD Rate.  This does not appear to work
+    // So instead, after replacing the Roomba battery, do the following:
+    // Press the START button so the light is on
+    // Hold the START button till light turns off and a tune plays (about 30 seconds)
+    pinMode(ddPin,OUTPUT);
+    digitalWrite(ddPin, LOW);
+    delay(2000);
+    digitalWrite(ddPin, HIGH);
+    delay(100);
+    digitalWrite(ddPin, LOW);
+    delay(100);
+    digitalWrite(ddPin, HIGH);
+    delay(100);
+    digitalWrite(ddPin, LOW);
+    delay(100);
+    digitalWrite(ddPin, HIGH);
+    delay(100);
+    digitalWrite(ddPin, LOW);
+    delay(100);
+
+    //start the CREATE
+    mySerial.write(128); //starts the IO
+    delay(500);
+    
+    //enter CREATE into Safe Mode
+    mySerial.write(131);
+    delay(50);
+
+    //Make sure the CREATE is stopped
+    stopWheels();
+
+    lightPower(RED, LED_ON,0);
+    delay(1000);
+    lightPower(ORANGE, LED_ON, 0);
+    delay(1000);
+    startWheels(50,50);
+    delay(5000);
+    stopWheels();
+    //forward();
+    //delay(3000);
+    //reverse();
+    //delay(2000);
+    //spinInPlace();
+    lightPower(RED,LED_ON, 0);
+}
+
+void loop() {
+  // put your main code here, to run repeatedly:
+
+}
