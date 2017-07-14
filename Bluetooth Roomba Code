@@ -1,0 +1,260 @@
+int rxPin = 12;
+int txPin = 13;
+int ddPin = 11;
+
+#include <SoftwareSerial.h>
+SoftwareSerial mySerial(rxPin, txPin);
+
+String commandString = "";
+String failString = "";
+char inputString[200];
+int printIx = 0;
+int printLen = 0;
+
+boolean isCommandString = false;
+boolean wheelsStopped;
+
+int s = 100;
+//static int negs = -s;
+
+//start wheels turning at specific speed
+void startWheels(int rsp, int lsp)
+{
+  mySerial.write(145); //startwheels by assigning velocity to each of the two wheels
+  mySerial.write(highByte(rsp));
+  mySerial.write(lowByte(rsp));
+  mySerial.write(highByte(lsp));
+  mySerial.write(lowByte(lsp));
+}
+
+//stop wheels from turning(set startwheels to 0,0)
+void stopWheels()
+{
+  startWheels(0,0);
+}
+
+//move forward
+void forward()
+{
+  startWheels(s,s);
+}
+
+//spin motors in opposite directions == prevent self destruct mode
+void spinInPlace()
+{
+  mySerial.write(145);
+  mySerial.write(255);
+  mySerial.write(56);
+  mySerial.write(1);
+  mySerial.write(200);
+}
+
+void spinRight()
+{
+  startWheels(s, 0-s);
+  Serial.println("hi");
+}
+
+void spinLeft()
+{
+  startWheels(0-s, s);
+}
+
+//reverse
+unsigned long reverse()
+{
+  startWheels(0-s,0-s);
+}
+
+void dockMode()
+{
+  mySerial.write(143);
+}
+
+void safeMode()
+{
+  mySerial.write(131);
+}
+
+// this routine reads a "command" - max length = 200;    Paul's protocol : put brackets [] around the command so we can recognize the start and end.... 
+boolean tryReadSerialMsg () {
+  char sb;   
+  boolean msgRcvd = false; 
+  isCommandString = false; 
+  int i;
+  for (i = 0; i < 200; i++) {
+       inputString[i] = ' ';
+  }
+
+  while(Serial.available() && !msgRcvd) {
+    sb = Serial.read();
+
+      if (sb == '[')
+      {
+        isCommandString = true;
+        ClearInputString();
+      }
+      else if (sb == ']')
+      {
+         commandString = inputString;
+         
+         msgRcvd = true;
+      }
+      else if (isCommandString == true)
+      {
+        inputString[printIx] = sb;
+        printLen++;
+        printIx++;
+      }
+  } // end while
+
+  if (msgRcvd)
+  {
+    commandString = commandString.substring(0,printIx);
+    return true;
+  }
+  else
+  {
+    failString = inputString;
+    return false;
+ }
+
+} // end function
+
+
+void ClearInputString()
+{
+   int i;
+
+   for (i = 0; i < 100; i++) 
+   {
+       inputString[i] = ' ';
+   }
+   
+   commandString = "";
+   failString = "";
+   printIx = 0;
+   printLen = 0;
+}
+
+
+void setup() 
+{
+  //initialize console serial port
+  Serial.begin(9600);
+
+  //set up serial for talking to CREATE
+  pinMode(txPin, OUTPUT);
+  pinMode(rxPin, INPUT);
+  mySerial.begin(19200);
+  
+  //Pin 13 can be used for controlling the onboard LED
+  pinMode(13, OUTPUT);
+
+    // Attempt to set the BAUD Rate.  This does not appear to work
+    // So instead, after replacing the Roomba battery, do the following:
+    // Press the START button so the light is on
+    // Hold the START button till light turns off and a tune plays (about 30 seconds)
+    pinMode(ddPin,OUTPUT);
+    digitalWrite(ddPin, LOW);
+    delay(2000);
+    digitalWrite(ddPin, HIGH);
+    delay(100);
+    digitalWrite(ddPin, LOW);
+    delay(100);
+    digitalWrite(ddPin, HIGH);
+    delay(100);
+    digitalWrite(ddPin, LOW);
+    delay(100);
+    digitalWrite(ddPin, HIGH);
+    delay(100);
+    digitalWrite(ddPin, LOW);
+    delay(100);
+
+    //start the CREATE
+    mySerial.write(128); //starts the IO
+    delay(500);
+    
+    //enter CREATE into Safe Mode
+    mySerial.write(131);
+    delay(50);
+
+    //Make sure the CREATE is stopped
+    stopWheels();
+    wheelsStopped = true;
+
+    
+}
+
+void loop() 
+{
+    if (tryReadSerialMsg())      
+    { // If data is available to read,
+      // echo it back to the Serial Monitor... 
+    
+       if (isCommandString)
+       {
+           Serial.print("command received : "); 
+           Serial.println(commandString); 
+       } 
+       else 
+       {
+          //you read something that wasn't in brackets, or something failed.... 
+          Serial.print("what happened ? ");
+          Serial.println(failString);
+       }  
+    }
+    delay(100);
+
+    //do the command...
+    if (isCommandString)
+    {
+      if (commandString == "MoveForward")
+      {
+          forward();
+          wheelsStopped = false;
+      }
+      else if (commandString == "MoveBackward")
+      {
+        reverse();
+        wheelsStopped = false;
+      }
+      /*else if (commandString == "1" or "2" or "3" or "4" or "5")
+      {
+        s = commandString.toInt()*100;
+        //if (!wheelsStopped)
+        //{
+          //startWheels(s,s);
+        //}
+      }*/
+      else if (commandString.equals("MoveLeft"))
+      {
+        spinLeft();
+        wheelsStopped == false;
+      }
+      else if (commandString == "MoveRight")
+      {
+        spinRight();
+        wheelsStopped == false;
+      }
+       else if (commandString == "StopMovement")
+      {
+        stopWheels();
+        wheelsStopped = true;
+      } 
+      else if (commandString == "Safe")
+      {
+        safeMode();
+        stopWheels();
+        wheelsStopped = true;
+      }
+      else if (commandString == "Dock")
+      {
+        dockMode();
+      }
+    }
+
+   isCommandString = false; 
+   failString = "";
+   ClearInputString();
+}
