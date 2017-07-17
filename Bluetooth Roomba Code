@@ -2,6 +2,12 @@ int rxPin = 12;
 int txPin = 13;
 int ddPin = 11;
 
+//FOR TESTING LEDS
+int forwards = 8;
+int backwards = 9;
+int left = 9;
+int right = 11;
+
 #include <SoftwareSerial.h>
 SoftwareSerial mySerial(rxPin, txPin);
 
@@ -37,6 +43,7 @@ void stopWheels()
 void forward()
 {
   startWheels(s,s);
+  digitalWrite(8, HIGH);
 }
 
 //spin motors in opposite directions == prevent self destruct mode
@@ -140,8 +147,16 @@ void ClearInputString()
 
 void setup() 
 {
+  //FOR TESTING LEDS
+  pinMode(forwards, OUTPUT);
+  pinMode(backwards, OUTPUT);
+  pinMode(left, OUTPUT);
+  pinMode(right, OUTPUT);
   //initialize console serial port
   Serial.begin(9600);
+
+  //for TESTING
+  pinMode(8, OUTPUT);
 
   //set up serial for talking to CREATE
   pinMode(txPin, OUTPUT);
@@ -213,29 +228,41 @@ void loop()
       {
           forward();
           wheelsStopped = false;
+          digitalWrite(forwards, HIGH);
+          delay(500);
+          digitalWrite(forwards, LOW);
       }
       else if (commandString == "MoveBackward")
       {
         reverse();
         wheelsStopped = false;
+          digitalWrite(backwards, HIGH);
+          delay(500);
+          digitalWrite(backwards, LOW);
       }
-      /*else if (commandString == "1" or "2" or "3" or "4" or "5")
+      else if (commandString == "1" or commandString == "2" or commandString == "3" or commandString == "4" or commandString == "5")
       {
         s = commandString.toInt()*100;
         //if (!wheelsStopped)
         //{
           //startWheels(s,s);
         //}
-      }*/
+      }
       else if (commandString.equals("MoveLeft"))
       {
         spinLeft();
         wheelsStopped == false;
+          digitalWrite(left, HIGH);
+          delay(500);
+          digitalWrite(left, LOW);
       }
       else if (commandString == "MoveRight")
       {
         spinRight();
         wheelsStopped == false;
+          digitalWrite(right, HIGH);
+          delay(500);
+          digitalWrite(right, LOW);
       }
        else if (commandString == "StopMovement")
       {
@@ -247,10 +274,22 @@ void loop()
         safeMode();
         stopWheels();
         wheelsStopped = true;
+          digitalWrite(left, HIGH);
+          delay(500);
+          digitalWrite(right, HIGH);
+          delay(500);
+          digitalWrite(left, LOW);
+          digitalWrite(right, LOW);
       }
       else if (commandString == "Dock")
       {
         dockMode();
+        digitalWrite(forwards, HIGH);
+        delay(500);
+        digitalWrite(backwards, HIGH);
+        delay(500);
+        digitalWrite(forwards, LOW);
+        digitalWrite(backwards, LOW);
       }
     }
 
