@@ -1,6 +1,5 @@
 #include "Adafruit_Thermal.h"
 #include "SoftwareSerial.h"
-#include "Adafruit_NeoPixel.h"
 
 #define TX_PIN 6 //Arduino transit YELLOW wire labeled RX on printer
 #define RX_PIN 5 //Arduino receive GREEN WIRE labeled TX on printer
@@ -9,26 +8,13 @@ SoftwareSerial mySerial(RX_PIN, TX_PIN); //Declare SoftwareSerial object
 Adafruit_Thermal printer(&mySerial); //Pass address to printer constructor
 
 
-//declare light strip objects
-Adafruit_NeoPixel strip = Adafruit_NeoPixel(14, 7); //14 neopixels plugged into pin 5
-
 //VARIABLES
 
 //hardware
 int siren = 2;
-int yesButton = 3;
-int noButton = 4;
-int red1 = 8;
-int red2 = 9;
-int red 3 = 10;
-int green1 = 11;
-int green2 = 12;
-int green3 = 13;
-int blue1 = 14;
-int blue2 = 15;
-int blue3 = 16;
+int yesButton = 24;
+int noButton = 26;
 
-boolean sirenOn = false;
 boolean yesButtonPressed = false;
 boolean noButtonPressed = false;
 
@@ -41,164 +27,154 @@ boolean isCommandString = false;
 
 //METHODS
 
-// this routine reads a "command" - max length = 200;    Paul's protocol : put brackets [] around the command so we can recognize the start and end.... 
+// this routine reads a "command" - max length = 200;    Paul's protocol : put brackets [] around the command so we can recognize the start and end....
 boolean tryReadSerialMsg () {
-  char sb;   
-  boolean msgRcvd = false; 
-  isCommandString = false; 
+  char sb;
+  boolean msgRcvd = false;
+  isCommandString = false;
   int i;
   for (i = 0; i < 200; i++) {
-       inputString[i] = ' ';
+    inputString[i] = ' ';
   }
 
-  while(Serial.available() && !msgRcvd) {
+  while (Serial.available() && !msgRcvd) {
     sb = Serial.read();
 
-      if (sb == '[')
-      {
-        isCommandString = true;
-        ClearInputString();
-      }
-      else if (sb == ']')
-      {
-         commandString = inputString;
-         
-         msgRcvd = true;
-      }
-      else if (isCommandString == true)
-      {
-        inputString[printIx] = sb;
-        printLen++;
-        printIx++;
-      }
+    if (sb == '<')
+    {
+      isCommandString = true;
+      ClearInputString();
+    }
+    else if (sb == '>')
+    {
+      commandString = inputString;
+
+      msgRcvd = true;
+    }
+    else if (isCommandString == true)
+    {
+      inputString[printIx] = sb;
+      printLen++;
+      printIx++;
+    }
   } // end while
 
   if (msgRcvd)
   {
-    commandString = commandString.substring(0,printIx);
+    commandString = commandString.substring(0, printIx);
     return true;
   }
   else
   {
     failString = inputString;
     return false;
- }
+  }
 
 } // end function
 
 
 void ClearInputString()
 {
-   int i;
+  int i;
 
-   for (i = 0; i < 100; i++) 
-   {
-       inputString[i] = ' ';
-   }
-   
-   commandString = "";
-   failString = "";
-   printIx = 0;
-   printLen = 0;
+  for (i = 0; i < 100; i++)
+  {
+    inputString[i] = ' ';
+  }
+
+  commandString = "";
+  failString = "";
+  printIx = 0;
+  printLen = 0;
 }
 
-void print(String headline){
-  printer.println(headline);
+void print(String response) {
   printer.wake();
+  printer.justify('C'); //center text
+  printer.boldOn();
+  printer.setSize('L'); //large font size
+  printer.println(response);
+  printer.println("                                        ");
+  printer.wake();
+
 }
 
-String getHeadline(){
-  //SOMEHOW GET HEADLINE FROM BRAIN PHONE
-  return "hello";
+//check if buttons have been pressed
+void buttonPressed() {
+  if (digitalRead(yesButton) == HIGH) {
+    yesButtonPressed = true;
+  }
+  if (digitalRead(noButton) == HIGH) {
+    noButtonPressed = true;
+  }
+
+  if (yesButtonPressed) {
+    Serial.write("{yesButtonPressed}");
+    delay(250);
+    yesButtonPressed = false;
+  }
+  if (noButtonPressed) {
+   Serial.write("{noButtonPressed}");
+    delay(250);
+    noButtonPressed = false;
+  }
+
 }
 
-
+//SETUP RUNS ONCE
 void setup() {
   //initialize console serial port
   Serial.begin(19200); //initialize console serial port
   mySerial.begin(19200); //initialize SoftwareSerial
   printer.begin(); //initialize printer
-  strip.begin(); //initialize light strip
-  strip.show(); //initialize all pixels to "off"
-
-  //printer settings
-  printer.justify('C'); //center text
-  printer.boldOn();
-  printer.setSize('L'); //large font size
 
   //initialize hardware
   pinMode(siren, OUTPUT);
   pinMode(yesButton, INPUT_PULLUP);
-  pinMode(noButton, INPUT_PULLUP);   
-
-  //initialize LEDs
-  for(int i = 8; i < 17; i++){
-    pinMode(i, OUTPUT);
-  }
+  pinMode(noButton, INPUT_PULLUP);
 }
 
+//LOOP CONTINUALLY RUNS
 void loop() {
-    if (tryReadSerialMsg())      
-    { // If data is available to read,
-      // echo it back to the Serial Monitor... 
-    
-       if (isCommandString)
-       {
-           Serial.print("command received : "); 
-           Serial.println(commandString); 
-       } 
-       else 
-       {
-          //you read something that wasn't in brackets, or something failed.... 
-          Serial.print("what happened ? ");
-          Serial.println(failString);
-       }  
-    }
-    delay(100);
+  buttonPressed();
+  if (tryReadSerialMsg())
+  { // If data is available to read,
+    // echo it back to the Serial Monitor...
 
-    //do the command...
     if (isCommandString)
     {
-      if (commandString.equals("Siren"))
-      {
-        sirenOn = !sirenOn;
-        if(sirenOn){
-          digitalWrite(siren, HIGH);
-        }
-        else{
-          digitalWrite(siren, LOW);
-        }
-      }
-      else if (commandString.equals("printer"))
-      {
-        print(getHeadline());
+      Serial.print("command received : ");
+      Serial.println(commandString);
+    }
+    else
+    {
+      //you read something that wasn't in brackets, or something failed....
+      Serial.print("what happened ? ");
+      Serial.println(failString);
+    }
+  }
+  // delay(100);
 
-      }
-      else if(commandString.equals("lights")){
-        
-      }
-    }
+  //do the command...
+  if (isCommandString)
+  {
+    if (commandString.equals("Siren on"))
+    {
+      digitalWrite(siren, HIGH);
 
-    //check if buttons have been pressed
-    if(digitalRead(yesButton) == LOW){
-      yesButtonPressed = true;
     }
-    if(digitalRead(noButton) == LOW){
-      noButtonPressed = true;
+    else if (commandString.equals("Siren off")) {
+      digitalWrite(siren, LOW);
     }
+    else if (commandString.startsWith("print: "))
+    {
+      String text = commandString.substring(commandString.indexOf(": ") + 2, commandString.length());
+      print(text);
+      Serial.print(text);
+    }
+  }
 
-    if(yesButtonPressed){
-      //SOMEHOW SEND MESSAGE TO BRAIN PHONE
-      delay(500);
-      yesButtonPressed = false;
-    }
-    if(noButtonPressed){
-      //SOMEHOW SEND MESSAGE TO BRAIN PHONE
-      delay(500);
-      noButtonPressed = false;
-    }
-
-   isCommandString = false; 
-   failString = "";
-   ClearInputString();
+  isCommandString = false;
+  failString = "";
+  ClearInputString();
 }
