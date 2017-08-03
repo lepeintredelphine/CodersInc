@@ -94,7 +94,7 @@ void print(String response) {
   printer.boldOn();
   printer.setSize('L'); //large font size
   printer.println(response);
-  printer.println("                                        ");
+  printer.println("                                               ");
   printer.wake();
 
 }
