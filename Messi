@@ -109,13 +109,13 @@ void buttonPressed() {
   }
 
   if (yesButtonPressed) {
-    Serial.write("{yesButtonPressed}");
-    delay(250);
+    //Serial.write("{yesButtonPressed}");
+    delay(500);
     yesButtonPressed = false;
   }
   if (noButtonPressed) {
-   Serial.write("{noButtonPressed}");
-    delay(250);
+    //Serial.write("{noButtonPressed}");
+    delay(500);
     noButtonPressed = false;
   }
 
