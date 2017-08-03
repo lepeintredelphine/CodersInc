@@ -27,7 +27,7 @@ boolean isCommandString = false;
 
 //METHODS
 
-// this routine reads a "command" - max length = 200;    Paul's protocol : put brackets [] around the command so we can recognize the start and end....
+// this routine reads a "command" - max length = 200;    Paul's protocol : put brackets <> around the command so we can recognize the start and end....
 boolean tryReadSerialMsg () {
   char sb;
   boolean msgRcvd = false;
