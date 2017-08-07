@@ -18,6 +18,9 @@ int noButton = 26;
 boolean yesButtonPressed = false;
 boolean noButtonPressed = false;
 
+boolean yesButtonWasPressed = false;
+boolean noButtonWasPressed = false;
+
 String commandString = "";
 String failString = "";
 char inputString[200];
@@ -27,7 +30,7 @@ boolean isCommandString = false;
 
 //METHODS
 
-// this routine reads a "command" - max length = 200;    Paul's protocol : put brackets <> around the command so we can recognize the start and end....
+// this routine reads a "command" - max length = 200;    Paul's protocol : put brackets [] around the command so we can recognize the start and end....
 boolean tryReadSerialMsg () {
   char sb;
   boolean msgRcvd = false;
@@ -40,12 +43,12 @@ boolean tryReadSerialMsg () {
   while (Serial.available() && !msgRcvd) {
     sb = Serial.read();
 
-    if (sb == '<')
+    if (sb == '[')
     {
       isCommandString = true;
       ClearInputString();
     }
-    else if (sb == '>')
+    else if (sb == ']')
     {
       commandString = inputString;
 
@@ -99,28 +102,6 @@ void print(String response) {
 
 }
 
-//check if buttons have been pressed
-void buttonPressed() {
-  if (digitalRead(yesButton) == HIGH) {
-    yesButtonPressed = true;
-  }
-  if (digitalRead(noButton) == HIGH) {
-    noButtonPressed = true;
-  }
-
-  if (yesButtonPressed) {
-    //Serial.write("{yesButtonPressed}");
-    delay(500);
-    yesButtonPressed = false;
-  }
-  if (noButtonPressed) {
-    //Serial.write("{noButtonPressed}");
-    delay(500);
-    noButtonPressed = false;
-  }
-
-}
-
 //SETUP RUNS ONCE
 void setup() {
   //initialize console serial port
@@ -136,7 +117,49 @@ void setup() {
 
 //LOOP CONTINUALLY RUNS
 void loop() {
-  buttonPressed();
+     //check if buttons have been pressed
+    if(digitalRead(yesButton) == LOW){
+      yesButtonPressed = true;
+
+      if (!yesButtonWasPressed)
+      {
+        // the button just got pressed - send the "yes" message to brain ("carrick") via bluetooth ("roldan")
+        Serial.println("<buttonpressed:yes>");
+        yesButtonWasPressed = true;   // so it only sends once, not every time through the loop
+      }
+    }
+    else 
+    {
+      yesButtonPressed == false;
+
+      if (yesButtonWasPressed)
+      {
+        // we won't do anything when the button is released, but this is where we would if we cared.... 
+        yesButtonWasPressed = false;
+      }
+    }
+
+    
+    if(digitalRead(noButton) == LOW){
+      noButtonPressed = true;
+      
+      if (!noButtonWasPressed)
+      {
+        // the button just got pressed - send the "no" message to brain ("carrick") via bluetooth ("roldan")
+        Serial.println("<buttonpressed:no>");
+        noButtonWasPressed = true;   // so it only sends once, not every time through the loop
+      }
+    }
+    else 
+    {
+      noButtonPressed == false;
+
+      if (noButtonWasPressed)
+      {
+        // we won't do anything when the button is released, but this is where we would if we cared.... 
+        noButtonWasPressed = false;
+      }
+    }
   if (tryReadSerialMsg())
   { // If data is available to read,
     // echo it back to the Serial Monitor...
@@ -158,17 +181,17 @@ void loop() {
   //do the command...
   if (isCommandString)
   {
-    if (commandString.equals("Siren on"))
+    if (commandString.equals("siren:on"))
     {
       digitalWrite(siren, HIGH);
 
     }
-    else if (commandString.equals("Siren off")) {
+    else if (commandString.equals("siren:off")) {
       digitalWrite(siren, LOW);
     }
-    else if (commandString.startsWith("print: "))
+    else if (commandString.startsWith("print:"))
     {
-      String text = commandString.substring(commandString.indexOf(": ") + 2, commandString.length());
+      String text = commandString.substring(commandString.indexOf(":") + 1, commandString.length());
       print(text);
       Serial.print(text);
     }
