@@ -1,0 +1,280 @@
+//#include <SoftwareSerial.h>
+#include <Servo.h>      // include the servo library
+
+//const int TX_BT = 1;
+//const int RX_BT = 0;
+
+int ledPin=7;
+
+String commandString = "";
+String failString = "";
+char inputString[200];
+int printIx = 0;
+int printLen = 0; 
+
+boolean isCommandString = false; 
+
+//SoftwareSerial blueToothSerial(TX_BT, RX_BT);
+
+Servo myServoMain;    
+int MainServoMotorPin = 8;
+
+
+// part 2
+String commandString2 = "";
+char inputString2[200];
+int printIx2 = 0;
+int printLen2 = 0; 
+
+boolean isCommandString2 = false; 
+
+// end of part 2
+
+
+void setup() {
+
+  Serial.begin(9600); // Start serial communication at 9600 bps
+//  blueToothSerial.begin(9600); 
+
+  myServoMain.attach(MainServoMotorPin);
+
+  ClearInputString();
+
+// on startup : flash to show power and led are working
+  pinMode(ledPin,OUTPUT);
+  digitalWrite(ledPin,LOW);
+  delay(500);
+  digitalWrite(ledPin,HIGH);
+  delay(500);
+  digitalWrite(ledPin,LOW);
+  delay(500);
+  digitalWrite(ledPin,HIGH);
+  delay(500);
+  digitalWrite(ledPin,LOW);
+  delay(500);
+
+  commandString = "";
+  failString = "";
+}
+
+void loop() {
+
+    if (tryReadSerialMsg())      
+    { // If data is available to read,
+    
+
+    // echo it back to the Serial Monitor... 
+       
+       if (isCommandString)
+       {
+           Serial.print("command received : "); 
+           Serial.println(commandString); 
+  
+ //          blueToothSerial.print("bluetooth command received : "); 
+ //          blueToothSerial.println(commandString); 
+         
+       } 
+       else 
+       if (isCommandString2)
+       {
+            Serial.println(commandString2);   // echo this out - it will be picked up by the other bluetooth reader
+  
+ //          blueToothSerial.print("bluetooth command received : "); 
+ //          blueToothSerial.println(commandString); 
+         
+       } 
+       else
+       {
+          //      you read something that wasn't in brackets, or something failed.... 
+          Serial.print("what happened ? ");
+          Serial.println(failString);
+          
+ //          blueToothSerial.print("bluetooth what happened ?  "); 
+ //          blueToothSerial.println(commandString); 
+       }  
+   }
+   delay(100);
+   
+   // do the command...   
+
+   if (isCommandString)
+   {  
+       if (commandString == "x")
+       {
+          DoX();
+       }
+       else
+       if (commandString == "y")
+       {
+          DoY(); 
+       }
+       else
+       // it's something else...
+       {
+          DoSomethingElse(commandString);
+       }
+       
+       commandString = "";
+   }
+   
+   isCommandString = false; 
+   isCommandString2 = false;
+   failString = "";
+   ClearInputString();
+   ClearInputString2();
+}
+
+
+// this routine reads a "command" - max length = 200;    Paul's protocol : put brackets [] around the command so we can recognize the start and end.... 
+boolean tryReadSerialMsg () {
+  char sb;   
+  boolean msgRcvd = false; 
+  isCommandString = false; 
+
+  boolean msgRcvd2 = false; 
+  isCommandString2 = false;
+  
+  int i;
+  for (i = 0; i < 200; i++) {
+       inputString[i] = ' ';
+       inputString2[i] = ' ';
+  }
+
+  while(Serial.available() && !msgRcvd) {
+    sb = Serial.read();
+
+      if (sb == '[')
+      {
+        isCommandString = true;
+        ClearInputString();
+      }
+      else if (sb == ']')
+      {
+         commandString = inputString;
+         
+         msgRcvd = true;
+      }
+      else if (isCommandString == true)
+      {
+        inputString[printIx] = sb;
+        printLen++;
+        printIx++;
+      }
+      
+      else 
+      if (sb == '<')
+      {
+        isCommandString2 = true;
+        ClearInputString2();
+        inputString2[printIx2] = sb;
+        printLen2++;
+        printIx2++;
+
+      }
+      else if (sb == '>')
+      {
+        inputString2[printIx2] = sb;
+        printLen2++;
+        printIx2++;
+        commandString2 = inputString2;
+         
+         msgRcvd2 = true;
+      }
+      else if (isCommandString2 == true)
+      {
+        inputString2[printIx2] = sb;
+        printLen2++;
+        printIx2++;
+      }
+
+
+      
+  } // end while
+
+  if (msgRcvd)
+  {
+    commandString = commandString.substring(0,printIx);
+    return true;
+  }
+  if (msgRcvd2)
+  {
+//    commandString2 = commandString2.substring(0,printIx2);
+    return true;
+  }
+  else
+  {
+    failString = inputString2;
+    return false;
+  }
+
+} // end function
+
+
+void DoX()
+{
+    Serial.println("you are doing x"); 
+    // do whatever x means... 
+      SetServo(0,20);    // initialize to left
+
+}
+
+void DoY()
+{
+    Serial.println("you are doing y"); 
+    // do whatever y means... 
+          SetServo(0,120);    // initialize to left
+
+}
+
+void DoSomethingElse(String cmd)
+{
+    Serial.print("you are doing something else : "); 
+    Serial.println(cmd); 
+    // do something with cmd
+}
+
+void ClearInputString()
+{
+   int i;
+
+   for (i = 0; i < 100; i++) 
+   {
+       inputString[i] = ' ';
+   }
+   
+   commandString = "";
+   failString = "";
+   printIx = 0;
+   printLen = 0;
+
+}
+void ClearInputString2()
+{
+   int i;
+
+   for (i = 0; i < 100; i++) 
+   {
+       inputString2[i] = ' ';
+   }
+   
+   commandString2 = "";
+   failString = "";
+   printIx2 = 0;
+   printLen2 = 0;
+
+}
+void SetServo(int ServoNbr, int Angle)   // possible values for Angle are 20 through 160
+{
+  //  if (Angle < 20) Angle = 20;
+  //  if (Angle > 120) Angle = 120;
+
+    if (ServoNbr == 0)
+    {
+        Serial.println("move servo"); 
+        myServoMain.write(Angle); 
+    }
+ 
+
+
+}
+
