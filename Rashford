@@ -1,7 +1,7 @@
 #include "Adafruit_NeoPixel.h"
 
 //declare light strip objects
-Adafruit_NeoPixel strip = Adafruit_NeoPixel(14, 7); //14 neopixels plugged into pin 5
+Adafruit_NeoPixel strip = Adafruit_NeoPixel(14, 7); //14 neopixels plugged into pin 7
 
 #define REDPIN 3
 #define GREENPIN 5
