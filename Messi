@@ -11,7 +11,8 @@ Adafruit_Thermal printer(&mySerial); //Pass address to printer constructor
 //VARIABLES
 
 //hardware
-int siren = 2;
+int sirenMotor = 28;
+int sirenLight = 30;
 int yesButton = 24;
 int noButton = 26;
 
@@ -110,7 +111,8 @@ void setup() {
   printer.begin(); //initialize printer
 
   //initialize hardware
-  pinMode(siren, OUTPUT);
+  pinMode(sirenMotor, OUTPUT);
+  pinMode(sirenLight, OUTPUT);
   pinMode(yesButton, INPUT_PULLUP);
   pinMode(noButton, INPUT_PULLUP);
 }
@@ -183,11 +185,13 @@ void loop() {
   {
     if (commandString.equals("siren:on"))
     {
-      digitalWrite(siren, HIGH);
+      digitalWrite(sirenLight, HIGH);
+      digitalWrite(sirenMotor, HIGH);
 
     }
     else if (commandString.equals("siren:off")) {
-      digitalWrite(siren, LOW);
+      digitalWrite(sirenLight, LOW);
+      digitalWrite(sirenMotor, LOW);
     }
     else if (commandString.startsWith("print:"))
     {
