@@ -1,0 +1,14 @@
+loops.forever(function () {
+    if (pins.A1.digitalRead()) {
+        light.showRing(
+        `blue blue blue blue blue blue blue blue blue blue`
+        )
+        pins.A3.servoWrite(10)
+        loops.pause(1000)
+    } else {
+        light.showRing(
+        "red red red red red red red red red red"
+        )
+        pins.A3.servoWrite(100)
+        loops.pause(1000)
+    
