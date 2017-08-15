@@ -1,5 +1,6 @@
 #include "Adafruit_Thermal.h"
 #include "SoftwareSerial.h"
+#include "Adafruit_NeoPixel.h"
 
 #define TX_PIN 6 //Arduino transit YELLOW wire labeled RX on printer
 #define RX_PIN 5 //Arduino receive GREEN WIRE labeled TX on printer
@@ -13,14 +14,14 @@ Adafruit_Thermal printer(&mySerial); //Pass address to printer constructor
 //hardware
 int sirenMotor = 28;
 int sirenLight = 30;
-int yesButton = 24;
+int yesButton = 24;  
 int noButton = 26;
 
 boolean yesButtonPressed = false;
 boolean noButtonPressed = false;
 
 boolean yesButtonWasPressed = false;
-boolean noButtonWasPressed = false;
+boolean noButtonWasPressed = false; 
 
 String commandString = "";
 String failString = "";
@@ -31,82 +32,82 @@ boolean isCommandString = false;
 
 //METHODS
 
-// this routine reads a "command" - max length = 200;    Paul's protocol : put brackets [] around the command so we can recognize the start and end....
+// this routine reads a "command" - max length = 200;    Paul's protocol : put brackets [] around the command so we can recognize the start and end.... 
 boolean tryReadSerialMsg () {
-  char sb;
-  boolean msgRcvd = false;
-  isCommandString = false;
+  char sb;   
+  boolean msgRcvd = false; 
+  isCommandString = false; 
   int i;
   for (i = 0; i < 200; i++) {
-    inputString[i] = ' ';
+       inputString[i] = ' ';
   }
 
-  while (Serial.available() && !msgRcvd) {
+  while(Serial.available() && !msgRcvd) {
     sb = Serial.read();
 
-    if (sb == '[')
-    {
-      isCommandString = true;
-      ClearInputString();
-    }
-    else if (sb == ']')
-    {
-      commandString = inputString;
-
-      msgRcvd = true;
-    }
-    else if (isCommandString == true)
-    {
-      inputString[printIx] = sb;
-      printLen++;
-      printIx++;
-    }
+      if (sb == '[')
+      {
+        isCommandString = true;
+        ClearInputString();
+      }
+      else if (sb == ']')
+      {
+         commandString = inputString;
+         
+         msgRcvd = true;
+      }
+      else if (isCommandString == true)
+      {
+        inputString[printIx] = sb;
+        printLen++;
+        printIx++;
+      }
   } // end while
 
   if (msgRcvd)
   {
-    commandString = commandString.substring(0, printIx);
+    commandString = commandString.substring(0,printIx);
     return true;
   }
   else
   {
     failString = inputString;
     return false;
-  }
+ }
 
 } // end function
 
 
 void ClearInputString()
 {
-  int i;
+   int i;
 
-  for (i = 0; i < 100; i++)
-  {
-    inputString[i] = ' ';
-  }
-
-  commandString = "";
-  failString = "";
-  printIx = 0;
-  printLen = 0;
+   for (i = 0; i < 100; i++) 
+   {
+       inputString[i] = ' ';
+   }
+   
+   commandString = "";
+   failString = "";
+   printIx = 0;
+   printLen = 0;
 }
 
-void print(String response) {
+void print(String response){
   printer.wake();
   printer.justify('C'); //center text
   printer.boldOn();
   printer.setSize('L'); //large font size
   printer.println(response);
-  printer.println("                                               ");
+  printer.println("                                                          ");
   printer.wake();
-
 }
 
-//SETUP RUNS ONCE
+
+
 void setup() {
   //initialize console serial port
-  Serial.begin(19200); //initialize console serial port
+  Serial.begin(9600); //initialize console serial port, use 9600 so BT will work
   mySerial.begin(19200); //initialize SoftwareSerial
   printer.begin(); //initialize printer
 
@@ -114,12 +115,50 @@ void setup() {
   pinMode(sirenMotor, OUTPUT);
   pinMode(sirenLight, OUTPUT);
   pinMode(yesButton, INPUT_PULLUP);
-  pinMode(noButton, INPUT_PULLUP);
+  pinMode(noButton, INPUT_PULLUP);   
 }
 
-//LOOP CONTINUALLY RUNS
 void loop() {
-     //check if buttons have been pressed
+    if (tryReadSerialMsg())      
+    { // If data is available to read,
+      // echo it back to the Serial Monitor... 
+    
+       if (isCommandString)
+       {
+           Serial.print("command received : "); 
+           Serial.println(commandString); 
+       } 
+       else 
+       {
+          //you read something that wasn't in brackets, or something failed.... 
+          Serial.print("what happened ? ");
+          Serial.println(failString);
+       }  
+    }
+    delay(100);
+
+    //do the command...
+    if (isCommandString)
+    {
+      if (commandString.equals("siren:on"))     //let's make our standard all lower case, with a colon after the "control word", like siren: or print:
+      {
+        digitalWrite(sirenMotor, HIGH);
+        digitalWrite(sirenLight, HIGH);
+      }
+      else if(commandString.equals("siren:off")){  //let's make our standard all lower case
+        digitalWrite(sirenMotor, LOW);
+        digitalWrite(sirenLight, LOW);
+      }
+      else if (commandString.startsWith("print:"))
+      {
+        String text = commandString.substring(commandString.indexOf(":") + 1,commandString.length());
+        print(text);
+        Serial.println(text);
+
+      }
+    }
+
+    //check if buttons have been pressed
     if(digitalRead(yesButton) == LOW){
       yesButtonPressed = true;
 
@@ -162,46 +201,8 @@ void loop() {
         noButtonWasPressed = false;
       }
     }
-  if (tryReadSerialMsg())
-  { // If data is available to read,
-    // echo it back to the Serial Monitor...
 
-    if (isCommandString)
-    {
-      Serial.print("command received : ");
-      Serial.println(commandString);
-    }
-    else
-    {
-      //you read something that wasn't in brackets, or something failed....
-      Serial.print("what happened ? ");
-      Serial.println(failString);
-    }
-  }
-  // delay(100);
-
-  //do the command...
-  if (isCommandString)
-  {
-    if (commandString.equals("siren:on"))
-    {
-      digitalWrite(sirenLight, HIGH);
-      digitalWrite(sirenMotor, HIGH);
-
-    }
-    else if (commandString.equals("siren:off")) {
-      digitalWrite(sirenLight, LOW);
-      digitalWrite(sirenMotor, LOW);
-    }
-    else if (commandString.startsWith("print:"))
-    {
-      String text = commandString.substring(commandString.indexOf(":") + 1, commandString.length());
-      print(text);
-      Serial.print(text);
-    }
-  }
-
-  isCommandString = false;
-  failString = "";
-  ClearInputString();
+   isCommandString = false; 
+   failString = "";
+   ClearInputString();
 }
