@@ -62,6 +62,7 @@ boolean tryReadSerialMsg () {
         printLen++;
         printIx++;
       }
+      delay(10);
   } // end while
 
   if (msgRcvd)
@@ -82,7 +83,7 @@ void ClearInputString()
 {
    int i;
 
-   for (i = 0; i < 100; i++) 
+   for (i = 0; i < 200; i++) 
    {
        inputString[i] = ' ';
    }
