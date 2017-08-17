@@ -12,8 +12,8 @@ Adafruit_Thermal printer(&mySerial); //Pass address to printer constructor
 //VARIABLES
 
 //hardware
-int sirenMotor = 28;
-int sirenLight = 30;
+int sirenMotor = 17;
+int sirenLight = 18;
 int yesButton = 24;  
 int noButton = 26;
 
@@ -45,12 +45,12 @@ boolean tryReadSerialMsg () {
   while(Serial.available() && !msgRcvd) {
     sb = Serial.read();
 
-      if (sb == '[')
+      if (sb == '<')
       {
         isCommandString = true;
         ClearInputString();
       }
-      else if (sb == ']')
+      else if (sb == '>')
       {
          commandString = inputString;
          
@@ -116,6 +116,7 @@ void setup() {
   pinMode(sirenLight, OUTPUT);
   pinMode(yesButton, INPUT_PULLUP);
   pinMode(noButton, INPUT_PULLUP);   
+  pinMode(13, OUTPUT);
 }
 
 void loop() {
@@ -140,19 +141,21 @@ void loop() {
     //do the command...
     if (isCommandString)
     {
-      if (commandString.equals("siren:on"))     //let's make our standard all lower case, with a colon after the "control word", like siren: or print:
+      if (commandString.equals("siren:off"))     //let's make our standard all lower case, with a colon after the "control word", like siren: or print:
       {
         digitalWrite(sirenMotor, HIGH);
-        digitalWrite(sirenLight, HIGH);
-      }
-      else if(commandString.equals("siren:off")){  //let's make our standard all lower case
-        digitalWrite(sirenMotor, LOW);
         digitalWrite(sirenLight, LOW);
+      }
+      else if(commandString.equals("siren:on")){  //let's make our standard all lower case
+        digitalWrite(sirenMotor, LOW);
+        digitalWrite(sirenLight, HIGH);
       }
       else if (commandString.startsWith("print:"))
       {
         String text = commandString.substring(commandString.indexOf(":") + 1,commandString.length());
+        digitalWrite(13, HIGH);
         print(text);
+        digitalWrite(13, LOW);
         Serial.println(text);
 
       }
