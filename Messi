@@ -12,7 +12,7 @@ Adafruit_Thermal printer(&mySerial); //Pass address to printer constructor
 //VARIABLES
 
 //hardware
-int sirenMotor = 17;
+int sirenMotor = 34;
 int sirenLight = 18;
 int yesButton = 24;  
 int noButton = 26;
@@ -157,7 +157,7 @@ void loop() {
         digitalWrite(13, HIGH);
         print(text);
         digitalWrite(13, LOW);
-        Serial.println(text);
+       // Serial.println(text);
 
       }
     }
