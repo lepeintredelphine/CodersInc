@@ -1,14 +1,15 @@
 loops.forever(function () {
-    if (pins.A1.digitalRead()) {
-        light.showRing(
-        `blue blue blue blue blue blue blue blue blue blue`
-        )
-        pins.A3.servoWrite(10)
-        loops.pause(1000)
-    } else {
+    if (input.soundLevel() > 18) {
         light.showRing(
         "red red red red red red red red red red"
         )
-        pins.A3.servoWrite(100)
+        pins.A2.servoWrite(100)
+        music.playSoundUntilDone(music.sounds(Sounds.PowerDown))
         loops.pause(1000)
-    
+    } else {
+        pins.A2.servoWrite(180)
+        light.showRing(
+        `green green green green green green green green green green`
+        )
+    }
+})
